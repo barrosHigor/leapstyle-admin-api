@@ -1,3 +1,5 @@
+using BackendGestaoEasy.Configuracoes;
+using leap_dashboard_admin_api.Configuracoes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -33,8 +35,11 @@ namespace leap_dashboard_admin_api
             services.AddControllers();
             services.AddResponseCompression();
 
+            new Inject(services);
+
             services.AddSwaggerGen(c =>
-            {   
+            {
+                c.OperationFilter<ReApplyOptionalRouteParameterOperationFilter>();
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "LeapStyle", Version = "1.0.0" });
                 c.CustomSchemaIds(type => type.ToString());
             });
@@ -52,7 +57,8 @@ namespace leap_dashboard_admin_api
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            // custom basic auth middleware
+            app.UseMiddleware<BasicAuthMiddleware>();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

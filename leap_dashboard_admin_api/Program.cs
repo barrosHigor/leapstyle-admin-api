@@ -1,56 +1,26 @@
-using BackendGestaoEasy.Configuracoes;
-using leap_dashboard_admin_api;
-using leap_dashboard_admin_api.Configuracoes;
-using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-var builder = WebApplication.CreateBuilder(args);
-var _version = typeof(Program).Assembly.GetName().Version.ToString();
-
-// add services to DI container
-{   
-    var services = builder.Services;
-    services.AddCors();
-    services.AddOptions();
-    services.AddHttpContextAccessor();
-    services.AddResponseCompression();
-    services.AddControllers();
-    services.AddResponseCompression();
-
-    new Inject(services);
-
-    services.AddSwaggerGen(c =>
-    {
-        c.OperationFilter<ReApplyOptionalRouteParameterOperationFilter>();
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "LeapStyle", Version = _version });
-        c.CustomSchemaIds(type => type.ToString());
-    });
-}
-
-var app = builder.Build();
-
-// configure HTTP request pipeline
+namespace leap_dashboard_admin_api
 {
-    // global cors policy
-    app.UseCors(x => x
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader());
-
-    app.UseRouting();
-
-    app.UseResponseCompression();
-    app.UseHttpsRedirection();
-
-    // custom basic auth middleware
-    app.UseMiddleware<BasicAuthMiddleware>();
-
-    app.MapControllers();
-
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    public class Program
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", $"LeapStyle {_version}");
-    });
-}
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
-app.Run();
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
+}
